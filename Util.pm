@@ -1,28 +1,34 @@
-# $Id: Util.pm,v 1.7 2001/06/04 10:11:27 matt Exp $
+# $Id: Util.pm,v 1.13 2002/01/30 09:38:42 matt Exp $
 
 package AxKit::XSP::Util;
 use strict;
 use Apache::AxKit::Language::XSP;
 use HTTP::GHTTP;
 use Apache::File;
-use XML::XPath;
-use Time::Object; # overrides localtime
+use XML::LibXML 1.31;
+use Time::Piece; # overrides localtime
 
 use vars qw/@ISA $NS $VERSION/;
 
 @ISA = ('Apache::AxKit::Language::XSP');
 $NS = 'http://apache.org/xsp/util/v1';
 
-$VERSION = "1.4";
+$VERSION = "1.5";
 
 ## Taglib subs
 
 # insert from a local file
 sub include_file {
     my ($document, $parent, $filename) = @_;
-    my $p = XML::XPath::XMLParser->new(filename => $filename);
-    my $root = $p->parse;
-    $parent->appendChild($root);
+    my $doc = XML::LibXML->new()->parse_file($filename);
+    if ($doc) {
+        my $root = $doc->getDocumentElement();
+        $root = $document->importNode($root, 1);
+        $parent->appendChild($root);
+    }
+    else {
+        die "XML::LibXML returned undef";
+    }
 }
 
 
@@ -36,17 +42,31 @@ sub include_uri {
     my $ua = HTTP::GHTTP->new($uri);
     $ua->process_request;
     my $raw_xml = $ua->get_body;
-    my $p = new XML::XPath::XMLParser->new(xml => $raw_xml);
-    my $root = $p->parse;
-    $parent->appendChild($root);
+    my $doc = XML::LibXML->new()->parse_string($raw_xml);
+    if ($doc) {
+        my $root = $doc->getDocumentElement();
+        $root = $document->importNode($root, 1);
+        $parent->appendChild($root);
+    }
+    else {
+        die "XML::LibXML returned undef";
+    }
 }
-        
+
 # insert from a SCALAR
 sub include_expr {
     my ($document, $parent, $frag) = @_;
-    my $p = XML::XPath::XMLParser->new( xml => $frag ); 
-    my $root = $p->parse;   
-    $parent->appendChild($root);
+    if ($frag || $frag == 0) {
+        my $doc = XML::LibXML->new()->parse_string( $frag ); 
+        if ($doc) {
+            my $root = $doc->getDocumentElement();
+            $root = $document->importNode($root, 1);
+            $parent->appendChild($root);
+        }
+        else {
+            die "XML::LibXML returned undef";
+        }
+    }
 }
 
 # insert from a local file as plain text
@@ -67,7 +87,6 @@ sub get_date {
     my $t = localtime;
     my $ret = $t->strftime($format);
     return $ret;
-    #$parent->appendChild( XML::XPath::Node::Text->new($ret) );
 }
 
 ## Parser subs

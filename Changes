@@ -1,5 +1,9 @@
 Revision history for Perl extension AxKit::XSP::Util.
 
+1.5
+    - Updated to use XML::LibXML for AxKit 1.5
+    - Changed Time::Object for Time::Piece
+    
 1.4
     - Updated to AxKit 1.4 API
 
