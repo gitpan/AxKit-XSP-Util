@@ -1,4 +1,4 @@
-# $Id: Util.pm,v 1.13 2002/01/30 09:38:42 matt Exp $
+# $Id: Util.pm,v 1.15 2002/05/27 15:52:01 matt Exp $
 
 package AxKit::XSP::Util;
 use strict;
@@ -13,7 +13,7 @@ use vars qw/@ISA $NS $VERSION/;
 @ISA = ('Apache::AxKit::Language::XSP');
 $NS = 'http://apache.org/xsp/util/v1';
 
-$VERSION = "1.5";
+$VERSION = "1.6";
 
 ## Taglib subs
 
@@ -23,7 +23,7 @@ sub include_file {
     my $doc = XML::LibXML->new()->parse_file($filename);
     if ($doc) {
         my $root = $doc->getDocumentElement();
-        $root = $document->importNode($root, 1);
+        $root = $document->importNode($root);
         $parent->appendChild($root);
     }
     else {
@@ -39,13 +39,20 @@ sub include_file {
 # declared in the doc. could be useful for widget building. . .
 sub include_uri {
     my ($document, $parent, $uri) = @_;
-    my $ua = HTTP::GHTTP->new($uri);
-    $ua->process_request;
-    my $raw_xml = $ua->get_body;
+    
+    my $raw_xml;
+    if ($uri =~ /^axkit:/) {
+        $raw_xml = AxKit::get_axkit_uri($uri);
+    }
+    else {
+        my $ua = HTTP::GHTTP->new($uri);
+        $ua->process_request;
+        $raw_xml = $ua->get_body;
+    }
     my $doc = XML::LibXML->new()->parse_string($raw_xml);
     if ($doc) {
         my $root = $doc->getDocumentElement();
-        $root = $document->importNode($root, 1);
+        $root = $document->importNode($root);
         $parent->appendChild($root);
     }
     else {
@@ -60,7 +67,7 @@ sub include_expr {
         my $doc = XML::LibXML->new()->parse_string( $frag ); 
         if ($doc) {
             my $root = $doc->getDocumentElement();
-            $root = $document->importNode($root, 1);
+            $root = $document->importNode($root);
             $parent->appendChild($root);
         }
         else {
