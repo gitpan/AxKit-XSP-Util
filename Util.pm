@@ -1,8 +1,8 @@
-# $Id: Util.pm,v 1.5 2001/02/16 22:05:03 matt Exp $
+# $Id: Util.pm,v 1.7 2001/06/04 10:11:27 matt Exp $
 
 package AxKit::XSP::Util;
 use strict;
-use Apache::AxKit::Language::XSP qw(start_expr expr end_expr append_to_script);
+use Apache::AxKit::Language::XSP;
 use HTTP::GHTTP;
 use Apache::File;
 use XML::XPath;
@@ -13,7 +13,7 @@ use vars qw/@ISA $NS $VERSION/;
 @ISA = ('Apache::AxKit::Language::XSP');
 $NS = 'http://apache.org/xsp/util/v1';
 
-$VERSION = "1.0";
+$VERSION = "1.4";
 
 ## Taglib subs
 
@@ -107,7 +107,7 @@ sub parse_start {
         return $code;
     }
     elsif ($tag eq 'get-file-contents') {
-        start_expr($e, $tag);
+        $e->start_expr($tag);
         my $code = 'my ($_file_name);';
         if ($attribs{name}) {
             $code .= '$_file_name = q|' . $attribs{name} . '|;';
@@ -115,7 +115,7 @@ sub parse_start {
         return $code;
     }
     elsif ($tag eq 'time') {
-        start_expr($e, $tag);
+        $e->start_expr($tag);
         my $code = 'my ($_format);';
         if ($attribs{format}) {
             $code .= '$_format =  q|' . $attribs{format} . '|;';
@@ -158,13 +158,13 @@ sub parse_end {
         ");}\n";
     }
     elsif ($tag eq 'get-file-contents') {
-        append_to_script($e, 'AxKit::XSP::Util::get_file_contents($_file_name);');
-        end_expr($e);
+        $e->append_to_script('AxKit::XSP::Util::get_file_contents($_file_name);');
+        $e->end_expr();
         return '';
     }
     elsif ($tag eq 'time') {
-        append_to_script($e, 'AxKit::XSP::Util::get_date($_format)');
-        end_expr($e);
+        $e->append_to_script('AxKit::XSP::Util::get_date($_format)');
+        $e->end_expr();
         return '';       
     }
     elsif ($tag eq 'format') {

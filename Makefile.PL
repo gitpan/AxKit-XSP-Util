@@ -5,7 +5,7 @@ WriteMakefile(
     'NAME'	=> 'AxKit::XSP::Util',
     'VERSION_FROM' => 'Util.pm', # finds $VERSION
     'PREREQ_PM' => {
-            AxKit => 1.3,
+            AxKit => 1.4,
             HTTP::GHTTP => 1.0,
             Time::Object => 0.11,
             Apache::File => 0,

@@ -1,5 +1,8 @@
 Revision history for Perl extension AxKit::XSP::Util.
 
+1.4
+    - Updated to AxKit 1.4 API
+
 0.66 Tue Feb 13 2001
 	- imported from Apach::AxKit::Language::XSP::Util
 
